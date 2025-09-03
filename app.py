@@ -10,13 +10,16 @@ scaler_x = joblib.load("scaler_x.pkl")
 scaler_y = joblib.load("scaler_y.pkl")
 
 # ==============================
-# Rebuild ANN Architecture
-# (must match training setup)
+# Rebuild ANN Architecture (must match training)
 # ==============================
 model = tf.keras.Sequential([
-    tf.keras.layers.Dense(128, activation="relu", input_shape=(8,)),
-    tf.keras.layers.Dense(64, activation="relu"),
-    tf.keras.layers.Dense(1)
+    tf.keras.layers.Dense(50, activation="relu", input_shape=(8,)),
+    tf.keras.layers.Dense(150, activation="relu"),
+    tf.keras.layers.Dropout(0.2),
+    tf.keras.layers.Dense(150, activation="relu"),
+    tf.keras.layers.Dropout(0.2),
+    tf.keras.layers.Dense(50, activation="relu"),
+    tf.keras.layers.Dense(1)   # regression output
 ])
 
 # Load trained weights
