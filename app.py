@@ -4,26 +4,10 @@ import tensorflow as tf
 import joblib
 
 # ==============================
-# Load Scalers
+# Load Model & Scaler
 # ==============================
-scaler_x = joblib.load("scaler_x.pkl")
-scaler_y = joblib.load("scaler_y.pkl")
-
-# ==============================
-# Rebuild ANN Architecture (must match training)
-# ==============================
-model = tf.keras.Sequential([
-    tf.keras.layers.Dense(50, activation="relu", input_shape=(8,)),
-    tf.keras.layers.Dense(150, activation="relu"),
-    tf.keras.layers.Dropout(0.2),
-    tf.keras.layers.Dense(150, activation="relu"),
-    tf.keras.layers.Dropout(0.2),
-    tf.keras.layers.Dense(50, activation="relu"),
-    tf.keras.layers.Dense(1)   # regression output
-])
-
-# Load trained weights
-model.load_weights("insurance_weights.weights.h5")
+model = tf.keras.models.load_model("insurance_model.keras", compile=False)
+scaler_x = joblib.load("scaler_x.pkl")  # only X scaler needed
 
 # ==============================
 # Page Config & Custom Style
@@ -88,7 +72,6 @@ region = st.sidebar.selectbox("Region", ["northeast", "northwest", "southeast", 
 sex = 1 if sex == "male" else 0
 smoker = 1 if smoker == "yes" else 0
 
-# One-hot encode region
 region_dict = {
     "northeast": [0, 0, 0],
     "northwest": [1, 0, 0],
@@ -97,24 +80,16 @@ region_dict = {
 }
 region_encoded = region_dict[region]
 
-# Build feature vector (8 features total)
 features = np.array([[age, sex, bmi, children, smoker] + region_encoded])
 
 # ==============================
 # Prediction
 # ==============================
 if st.sidebar.button("💡 Predict Premium"):
-    # Scale input
     features_scaled = scaler_x.transform(features)
+    prediction = model.predict(features_scaled)
 
-    # Predict using ANN
-    prediction_scaled = model.predict(features_scaled)
-
-    # Inverse transform to original scale
-    prediction = scaler_y.inverse_transform(prediction_scaled)
-    
-    # Clip negative values (so no negative premiums)
-    premium = max(prediction[0][0], 0)
+    premium = max(prediction[0][0], 0)  # already in dollars
 
     st.success(f"💰 Estimated Annual Premium: **${premium:,.2f}**")
 
