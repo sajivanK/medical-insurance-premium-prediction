@@ -1,11 +1,18 @@
 import streamlit as st
 import numpy as np
 import tensorflow as tf
+import joblib
 
-# Load your trained ANN model
+# ==============================
+# Load Model & Scalers
+# ==============================
 model = tf.keras.models.load_model("insurance_model.h5", compile=False)
+scaler_x = joblib.load("scaler_x.pkl")
+scaler_y = joblib.load("scaler_y.pkl")
 
-# 🎨 Page configuration
+# ==============================
+# Page Config & Custom Style
+# ==============================
 st.set_page_config(
     page_title="Medical Insurance Premium Predictor",
     page_icon="💰",
@@ -13,7 +20,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 🌟 Custom CSS for premium look
 st.markdown("""
     <style>
         .main {
@@ -43,41 +49,60 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 🏥 App Title
+# ==============================
+# App Title
+# ==============================
 st.title("🏥 Medical Insurance Premium Prediction")
 st.markdown("#### Predict your expected **insurance premium** based on lifestyle and health factors.")
 
-# 📊 Sidebar for inputs
+# ==============================
+# Sidebar Inputs
+# ==============================
 st.sidebar.header("📌 Input Your Details")
 
 age = st.sidebar.number_input("Age", min_value=18, max_value=100, value=30)
 sex = st.sidebar.selectbox("Sex", ["male", "female"])
 bmi = st.sidebar.number_input("BMI", min_value=10.0, max_value=60.0, value=25.0, step=0.1)
-children = st.sidebar.number_input("Number of Children", min_value=0, max_value=10, value=0)
+children = st.sidebar.number_input("Children", min_value=0, max_value=10, value=0)
 smoker = st.sidebar.selectbox("Smoker", ["yes", "no"])
 region = st.sidebar.selectbox("Region", ["northeast", "northwest", "southeast", "southwest"])
 
-# 🔄 Encode categorical variables
+# ==============================
+# Encode Categorical Variables
+# ==============================
 sex = 1 if sex == "male" else 0
 smoker = 1 if smoker == "yes" else 0
 region_dict = {"northeast": 0, "northwest": 1, "southeast": 2, "southwest": 3}
 region = region_dict[region]
 
-# 🧮 Feature array
+# ==============================
+# Prepare Features
+# ==============================
 features = np.array([[age, sex, bmi, children, smoker, region]])
 
-# 🎯 Prediction
+# ==============================
+# Prediction
+# ==============================
 if st.sidebar.button("💡 Predict Premium"):
-    prediction = model.predict(features)
+    # Scale input features
+    features_scaled = scaler_x.transform(features)
+
+    # Predict using ANN (scaled output)
+    prediction_scaled = model.predict(features_scaled)
+
+    # Inverse transform to get actual premium
+    prediction = scaler_y.inverse_transform(prediction_scaled)
+
     st.success(f"💰 Estimated Annual Premium: **${prediction[0][0]:,.2f}**")
 
-    # Extra info
     st.markdown("""
     ---
     ✅ **Note:** Predictions are based on the dataset used for training.  
     Lifestyle factors like **smoking** and **BMI** significantly increase premium costs.
     """)
 
-# 📌 Footer
+# ==============================
+# Footer
+# ==============================
 st.markdown("---")
 st.markdown("Made with ❤️ using **Streamlit & TensorFlow** | Demo Project")
