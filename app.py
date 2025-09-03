@@ -6,7 +6,7 @@ import joblib
 # ==============================
 # Load Model & Scalers
 # ==============================
-model = tf.keras.models.load_model("insurance_model.h5", compile=False)
+model = tf.keras.models.load_model("insurance_model.keras", compile=False)
 scaler_x = joblib.load("scaler_x.pkl")
 scaler_y = joblib.load("scaler_y.pkl")
 
