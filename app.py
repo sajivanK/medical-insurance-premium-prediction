@@ -97,8 +97,12 @@ if st.sidebar.button("💡 Predict Premium"):
 
     # Inverse transform to original scale
     prediction = scaler_y.inverse_transform(prediction_scaled)
+    
+    # Clip negative values (so no negative premiums)
+    premium = max(prediction[0][0], 0)
 
-    st.success(f"💰 Estimated Annual Premium: **${prediction[0][0]:,.2f}**")
+    st.success(f"💰 Estimated Annual Premium: **${premium:,.2f}**")
+
 
     st.markdown("""
     ---
