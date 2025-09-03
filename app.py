@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 
 # Load your trained ANN model
-model = tf.keras.models.load_model("insurance_model.h5")
+model = tf.keras.models.load_model("insurance_model.h5", compile=False)
 
 # 🎨 Page configuration
 st.set_page_config(
