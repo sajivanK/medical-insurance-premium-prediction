@@ -4,11 +4,23 @@ import tensorflow as tf
 import joblib
 
 # ==============================
-# Load Model & Scalers
+# Load Scalers
 # ==============================
-model = tf.keras.models.load_model("insurance_model.keras", compile=False)
 scaler_x = joblib.load("scaler_x.pkl")
 scaler_y = joblib.load("scaler_y.pkl")
+
+# ==============================
+# Rebuild ANN Architecture
+# (must match training setup)
+# ==============================
+model = tf.keras.Sequential([
+    tf.keras.layers.Dense(128, activation="relu", input_shape=(8,)),
+    tf.keras.layers.Dense(64, activation="relu"),
+    tf.keras.layers.Dense(1)
+])
+
+# Load trained weights
+model.load_weights("insurance_weights.weights.h5")
 
 # ==============================
 # Page Config & Custom Style
@@ -73,7 +85,7 @@ region = st.sidebar.selectbox("Region", ["northeast", "northwest", "southeast", 
 sex = 1 if sex == "male" else 0
 smoker = 1 if smoker == "yes" else 0
 
-# One-hot encode region (northeast = base case)
+# One-hot encode region
 region_dict = {
     "northeast": [0, 0, 0],
     "northwest": [1, 0, 0],
@@ -102,7 +114,6 @@ if st.sidebar.button("💡 Predict Premium"):
     premium = max(prediction[0][0], 0)
 
     st.success(f"💰 Estimated Annual Premium: **${premium:,.2f}**")
-
 
     st.markdown("""
     ---
