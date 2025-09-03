@@ -72,25 +72,30 @@ region = st.sidebar.selectbox("Region", ["northeast", "northwest", "southeast", 
 # ==============================
 sex = 1 if sex == "male" else 0
 smoker = 1 if smoker == "yes" else 0
-region_dict = {"northeast": 0, "northwest": 1, "southeast": 2, "southwest": 3}
-region = region_dict[region]
 
-# ==============================
-# Prepare Features
-# ==============================
-features = np.array([[age, sex, bmi, children, smoker, region]])
+# One-hot encode region (northeast = base case)
+region_dict = {
+    "northeast": [0, 0, 0],
+    "northwest": [1, 0, 0],
+    "southeast": [0, 1, 0],
+    "southwest": [0, 0, 1]
+}
+region_encoded = region_dict[region]
+
+# Build feature vector (8 features total)
+features = np.array([[age, sex, bmi, children, smoker] + region_encoded])
 
 # ==============================
 # Prediction
 # ==============================
 if st.sidebar.button("💡 Predict Premium"):
-    # Scale input features
+    # Scale input
     features_scaled = scaler_x.transform(features)
 
-    # Predict using ANN (scaled output)
+    # Predict using ANN
     prediction_scaled = model.predict(features_scaled)
 
-    # Inverse transform to get actual premium
+    # Inverse transform to original scale
     prediction = scaler_y.inverse_transform(prediction_scaled)
 
     st.success(f"💰 Estimated Annual Premium: **${prediction[0][0]:,.2f}**")
